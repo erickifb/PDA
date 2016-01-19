@@ -1,0 +1,55 @@
+Enter file contents here# -*- coding: utf-8 -*-
+"""
+Created on Tue Jan 19 09:25:40 2016
+
+@author: yi68009
+"""
+import pandas as pd
+encoding = 'latin1'
+
+upath = 'c:/users/yi68009/desktop/SCRAP/users.dat'
+rpath = 'c:/users/yi68009/desktop/SCRAP/ratings.dat'
+mpath = 'c:/users/yi68009/desktop/SCRAP/movies.dat'
+
+unames = ['user_id', 'gender', 'age', 'occupation', 'zip']
+rnames = ['user_id', 'movie_id', 'rating', 'timestamp']
+mnames = ['movie_id', 'title', 'genres']
+
+users = pd.read_table(upath, sep='::', header=None, names=unames, encoding=encoding)
+ratings = pd.read_table(rpath, sep='::', header=None, names=rnames, encoding=encoding)
+movies = pd.read_table(mpath, sep='::', header=None, names=mnames, encoding=encoding)
+
+#merge three datasets
+data = pd.merge(pd.merge(ratings, users), movies)
+
+#pivot table
+mean_ratings=data.pivot_table("rating", index="title", columns="gender", aggfunc="mean")
+
+#remove duplicates + countif
+ratings_by_title=data.groupby("title").size()
+
+#filter greater than 250
+active_titles=ratings_by_title.index[ratings_by_title>=250]
+
+#pivot tables for above 250
+mean_ratings=mean_ratings.ix[active_titles]
+
+#new dataframe for female ratings
+top_female_ratings = mean_ratings.sort_values(by='F', ascending=False)
+
+#new column
+mean_ratings['diff'] = mean_ratings['M'] - mean_ratings['F']
+
+#sort by new column
+sorted_by_diff = mean_ratings.sort_values(by='diff')
+# Reverse order of rows, take first 15 rows
+sorted_by_diff[::-1][:15] 
+#Standard deviation of rating grouped by title
+rating_std_by_title = data.groupby('title')['rating'].std()
+# Filter down to active_titles
+rating_std_by_title = rating_std_by_title.ix[active_titles]
+# Order Series by value in descending order
+rating_std_by_title.sort_values(ascending=False)[:10]
+
+#Sort series by titel
+rating_std_by_title.sort_index(ascending=False)
