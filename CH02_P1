@@ -10,8 +10,10 @@ records = [json.loads(line) for line in open(path)]
 
 print(records[0]['tz'])
 
-#create dictionary function (histogram)
+#create list of time zones (via loop)
 time_zones = [rec['tz'] for rec in records if 'tz' in rec]
+
+#create dictionary function (histogram)
 def get_counts(sequence):
     counts = {}
     for x in sequence:
